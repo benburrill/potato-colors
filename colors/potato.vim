@@ -128,7 +128,7 @@ call s:HL('CursorLineNr', {'fg': ['#FFFF00', 226], 'all': ['bold']})
 " vibrant, so I didn't bold them.
 call s:HL('Search', {'bg': s:search, 'fg': s:attn, 'gui': ['bold']})
 call s:HL('IncSearch', {'bg': s:attn, 'fg': s:search, 'gui': ['bold']})
-highlight link WildMenu IncSearch
+highlight! link WildMenu IncSearch
 
 call s:HL('DiffAdd', {'bg': ['#35531B', 22]})
 call s:HL('DiffChange', {'bg': ['#4C4800', 58]})
@@ -144,7 +144,7 @@ call s:HL('StatusLine', {'bg': s:activewin, 'fg': s:otherwin, 'all': ['bold']})
 call s:HL('StatusLineNC', {'bg': s:otherwin, 'fg': s:activewin})
 call s:HL('StatusLineTerm', {'bg': s:activeterm, 'fg': s:otherwin, 'all': ['bold']})
 call s:HL('StatusLineTermNC', {'bg': s:otherwin, 'fg': s:activeterm})
-call s:HL('VertSplit', {'bg': s:activewin})
+call s:HL('VertSplit', {'bg': s:activewin, 'fg': s:BG})
 
 call s:HL('ModeMsg', {'fg': s:cursor, 'all': ['bold']})
 call s:HL('WarningMsg', {'fg': s:attn, 'all': ['bold']})
