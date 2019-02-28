@@ -3,6 +3,8 @@
 "
 " And by "a potato", I mean me.  This is a colorscheme tuned (to the
 " best of my ability) to what I personally think looks pretty good.
+"
+" potato.vim currently only works in 256-color terminals and in the gui.
 
 " TODO: Fallback to murphy when <256 colors?
 set background=dark
@@ -41,7 +43,7 @@ function! s:HL(group, args)
     let ctermbg = get(a:args, 'ctermbg', ctermbg)
     let guisp = get(a:args, 'guisp', 'NONE')
 
-    " attr-lists for all interfaces can best with all
+    " attr-lists for all interfaces can be set with all
     let all = get(a:args, 'all', [])
     " additional interface specific attributes can also be added
     let gui = s:attr_list(all + get(a:args, 'gui', []))
@@ -52,6 +54,11 @@ function! s:HL(group, args)
                           \ 'ctermfg='.ctermfg 'ctermbg='.ctermbg
                           \ 'gui='.gui 'cterm='.cterm 'term='.term
 endfunc
+
+" The special fg and bg color names work in both gui and cterm, so it's
+" annoying to need to repeat them.
+let s:FG = ['fg', 'fg']
+let s:BG = ['bg', 'bg']
 " }}}
 
 " --- Colors -----------------------------------------------------------
@@ -63,19 +70,19 @@ endfunc
 " used and don't always mean much of anything to begin with (coming up
 " with names for these colors is hard!)
 
-let s:FG = ['fg', 'fg']
-let s:BG = ['bg', 'bg']
-
 let s:primary = ['#303025', 234]
 let s:secondary = ['#EDEDE1', 254]
-let s:edge = ['#37372B', 235]
-let s:extra = ['#5C5C47', 101]
-
-let s:select = ['#464636', 237]
-let s:noselect = ['#3A3A3A', 236]
 
 let s:cursor = ['#F6A329', 172]
+let s:select = ['#464636', 237]
+" Made by mixing s:select with s:cursor
 let s:cursorcolumn = ['#6F5838', 95]
+
+" The s:edge color is used for stuff outside the primary editing area,
+" like the line number column.
+let s:edge = ['#37372B', 235]
+" s:extra is a kinda meaningless color, but I reuse it in a few places.
+let s:extra = ['#5C5C47', 101]
 
 let s:search = ['#4C3736', 53]
 let s:attn = ['#FFE737', 220]
@@ -88,20 +95,11 @@ let s:activeterm = ['#6F9966', 107]
 
 " --- Interface --------------------------------------------------------
 " {{{
-" TODO: When I'm done s:HL'ing everything, it would be a good idea to do
-" a diff of the output of :hi (like with :redir) to check that I didn't
-" fuck anything up.
-
-" good bg colors: 3a3528 3a3929-3a392f 302d25 303025 303227
-" I actually am starting to prefer 303227 to this.
-" However, I think I should stop worrying about trying to fine tune the
-" background for now and come back to that once I have everything else
-" in place.
 call s:HL('Normal', {'bg': s:primary, 'fg': s:secondary})
 call s:HL('Visual', {'bg': s:select})
 highlight! link MatchParen Visual
 highlight! link QuickFixLine Visual
-call s:HL('VisualNOS', {'bg': s:noselect})
+call s:HL('VisualNOS', {'bg': ['#3A3A3A', 236]})
 
 " Conceal looks like visually selected bright white text
 call s:HL('Conceal', {'bg': s:select, 'fg': ['#FFFFFF', 15], 'all': ['bold']})
@@ -109,16 +107,12 @@ call s:HL('Conceal', {'bg': s:select, 'fg': ['#FFFFFF', 15], 'all': ['bold']})
 call s:HL('SpecialKey', {'fg': s:select})
 call s:HL('NonText', {'fg': s:extra, 'all': ['bold']})
 
-" ColorColumn, SignColumn, and LineNr all use the same background color
 call s:HL('ColorColumn', {'bg': s:edge})
 highlight! link SignColumn ColorColumn
 call s:HL('LineNr', {'bg': s:edge, 'fg': ['#898969', 241]})
 
-" In most (if not all) cases, the ctermbg is not used here, but might as
-" well define it anyway...
 call s:HL('Cursor', {'bg': s:cursor, 'fg': s:BG})
 
-" Made by mixing visual selection color with cursor color
 call s:HL('CursorColumn', {'bg': s:cursorcolumn})
 highlight! link CursorLine CursorColumn
 call s:HL('CursorLineNr', {'fg': ['#FFFF00', 226], 'all': ['bold']})
@@ -147,9 +141,8 @@ call s:HL('StatusLineTermNC', {'bg': s:otherwin, 'fg': s:activeterm})
 call s:HL('VertSplit', {'bg': s:activewin, 'fg': s:BG})
 
 call s:HL('ModeMsg', {'fg': s:cursor, 'all': ['bold']})
-call s:HL('WarningMsg', {'fg': s:attn, 'all': ['bold']})
+call s:HL('WarningMsg', {'fg': s:attn, 'bg': ['#645e2a', 94], 'all': ['bold']})
 
-" Folded uses NonText color for fg and not-current window status color for bg
 call s:HL('Folded', {'bg': s:otherwin, 'fg': s:extra, 'all': ['bold', 'italic']})
 highlight! link FoldColumn Folded
 
@@ -170,24 +163,21 @@ call s:HL('TabLineSel', {'fg': s:activewin, 'all': ['bold']})
 " --- Syntax -----------------------------------------------------------
 " {{{
 
-call s:HL('Comment', {'fg': ['#8A835C', 243]})
-call s:HL('String', {'fg': ['#AFCE57', 107]})
-
 " TODO: can't decide if I prefer italics or underline here
 call s:HL('Todo', {'fg': s:attn, 'all': ['bold', 'italic']})
 
-call s:HL('Statement', {'fg': ['#CC78B2', 133], 'all': ['bold']})
-call s:HL('PreProc', {'fg': ['#E44269', 161], 'all': ['bold']})
-call s:HL('Identifier', {'fg': ['#5CACED', 75]})
-call s:HL('Type', {'fg': ['#A0FF40', 155]})
-
-let s:opcol = ['#86C393', 72]
-call s:HL('Special', {'fg': s:opcol})
-" Earlier I didn't have bold in cterm for Operator, but IDK why
-" Should test to see if there was a reason
-call s:HL('Operator', {'fg': s:opcol, 'all': ['bold']})
-
+call s:HL('Comment', {'fg': ['#8A835C', 243]})
+call s:HL('String', {'fg': ['#AFCE57', 107]})
+call s:HL('Special', {'fg': ['#FF7040', 209]})
 call s:HL('Constant', {'fg': ['#FB9C6E', 173]})
+call s:HL('Delimiter', {'fg': ['#86C393', 72]})
+
+call s:HL('PreProc', {'fg': ['#E44269', 161], 'all': ['bold']})
+call s:HL('Statement', {'fg': ['#CC78B2', 133], 'all': ['bold']})
+hi! link Define Statement
+
+call s:HL('Identifier', {'fg': ['#5C98FF', 69]})
+call s:HL('Type', {'fg': ['#60e8c8', 80]})
 " }}}
 
 " --- Debug ------------------------------------------------------------
