@@ -84,7 +84,7 @@ let s:mainfg = ['#DFD8C0', 251]
 
 let s:cursor = ['#F6A329', 172]
 let s:select = ['#464636', 237]
-let s:cursorcolumn = ['#6F5838', 95]
+let s:cursorcolumn = ['#6F5838', 238]
 
 let s:edge = ['#37372B', 235]
 let s:context = ['#898969', 241]
