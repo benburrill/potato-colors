@@ -22,7 +22,7 @@ endif
 let g:colors_name = 'potato'
 
 " Defines some useful mappings for working on potato.
-let s:DEBUG_MODE = 1
+let s:DEBUG_MODE = 0
 
 " --- Utility Functions ------------------------------------------------
 " {{{
@@ -110,9 +110,7 @@ highlight! link MatchParen Visual
 highlight! link QuickFixLine Visual
 call s:HL('VisualNOS', {'bg': ['#3A3A3A', 236]})
 
-" Conceal looks like visually selected bright white text
 call s:HL('Conceal', {'bg': s:select, 'fg': ['#FFFFFF', 15], 'all': ['bold']})
-
 call s:HL('SpecialKey', {'fg': s:select})
 call s:HL('NonText', {'fg': s:nontext})
 
@@ -121,7 +119,6 @@ highlight! link SignColumn ColorColumn
 call s:HL('LineNr', {'bg': s:edge, 'fg': s:context})
 
 call s:HL('Cursor', {'bg': s:cursor, 'fg': s:BG})
-
 call s:HL('CursorColumn', {'bg': s:cursorcolumn})
 highlight! link CursorLine CursorColumn
 call s:HL('CursorLineNr', {'fg': s:attn, 'bg': s:edge, 'all': ['bold']})
@@ -198,8 +195,6 @@ call s:HL('Delimiter', {'fg': ['#86C393', 72]})
 " Shell Script:
 highlight link shQuote String
 highlight link shOption Type
-" highlight link shDeref Special
-" highlight link shCmdSubRegion Special
 highlight link shCommandSub Normal
 
 " JavaScript:
