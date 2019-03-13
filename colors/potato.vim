@@ -9,7 +9,7 @@
 " decent looking colorscheme that ships with vim.
 
 if !has('gui_running') && &t_Co < 256
-    colorscheme murphy
+    runtime colors/murphy.vim
     finish
 endif
 
