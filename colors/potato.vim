@@ -5,8 +5,14 @@
 " best of my ability) to what I personally think looks pretty good.
 "
 " potato.vim currently only works in 256-color terminals and in the gui.
+" In terminals without 256-color support, potato falls back to murphy, a
+" decent looking colorscheme that ships with vim.
 
-" TODO: Fallback to murphy when <256 colors?
+if !has('gui_running') && &t_Co < 256
+    colorscheme murphy
+    finish
+endif
+
 set background=dark
 highlight clear
 if exists('syntax_on')
@@ -14,6 +20,9 @@ if exists('syntax_on')
 endif
 
 let g:colors_name = 'potato'
+
+" Defines some useful mappings for working on potato.
+let s:DEBUG_MODE = 1
 
 " --- Utility Functions ------------------------------------------------
 " {{{
@@ -64,38 +73,38 @@ let s:BG = ['bg', 'bg']
 " --- Colors -----------------------------------------------------------
 " {{{
 " Note: this is not every color used by potato.  The colors defined here
-" generally either get reused or have some relationship to colors that
-" get reused or seem important enough to warrant putting in a variable.
-" Also, the variable names don't necessarily reflect how the colors get
-" used and don't always mean much of anything to begin with (coming up
-" with names for these colors is hard!)
+" generally either are reused or have some relationship to other named
+" colors or otherwise just seem important enough to warrant giving a
+" name to.  Also, the variable names don't necessarily reflect how the
+" colors get used and don't always mean much of anything to begin with
+" (coming up with names for these colors is hard!)
 
-let s:primary = ['#303025', 234]
-let s:secondary = ['#EDEDE1', 254]
+let s:mainbg = ['#303025', 234]
+let s:mainfg = ['#DFD8C0', 251]
 
 let s:cursor = ['#F6A329', 172]
 let s:select = ['#464636', 237]
-" Made by mixing s:select with s:cursor
 let s:cursorcolumn = ['#6F5838', 95]
 
-" The s:edge color is used for stuff outside the primary editing area,
-" like the line number column.
 let s:edge = ['#37372B', 235]
-" s:extra is a kinda meaningless color, but I reuse it in a few places.
-let s:extra = ['#5C5C47', 101]
+let s:context = ['#898969', 241]
+let s:nontext = ['#5C5C47', 239]
 
 let s:search = ['#4C3736', 53]
 let s:attn = ['#FFE737', 220]
+let s:bad = ['#FF2828', 124]
 
 let s:activewin = ['#BFB585', 144]
-let s:otherwin = ['#1E221A', 232]
-let s:activeterm = ['#6F9966', 107]
+let s:activeterm = ['#6F9966', 65]
+let s:inactivewin = ['#1E221A', 232]
 
+let s:othertab = ['#A4986A', 101]
+let s:sep = ['#A4885A', 137]
 " }}}
 
 " --- Interface --------------------------------------------------------
 " {{{
-call s:HL('Normal', {'bg': s:primary, 'fg': s:secondary})
+call s:HL('Normal', {'bg': s:mainbg, 'fg': s:mainfg})
 call s:HL('Visual', {'bg': s:select})
 highlight! link MatchParen Visual
 highlight! link QuickFixLine Visual
@@ -105,17 +114,17 @@ call s:HL('VisualNOS', {'bg': ['#3A3A3A', 236]})
 call s:HL('Conceal', {'bg': s:select, 'fg': ['#FFFFFF', 15], 'all': ['bold']})
 
 call s:HL('SpecialKey', {'fg': s:select})
-call s:HL('NonText', {'fg': s:extra, 'all': ['bold']})
+call s:HL('NonText', {'fg': s:nontext})
 
 call s:HL('ColorColumn', {'bg': s:edge})
 highlight! link SignColumn ColorColumn
-call s:HL('LineNr', {'bg': s:edge, 'fg': ['#898969', 241]})
+call s:HL('LineNr', {'bg': s:edge, 'fg': s:context})
 
 call s:HL('Cursor', {'bg': s:cursor, 'fg': s:BG})
 
 call s:HL('CursorColumn', {'bg': s:cursorcolumn})
 highlight! link CursorLine CursorColumn
-call s:HL('CursorLineNr', {'fg': ['#FFFF00', 226], 'all': ['bold']})
+call s:HL('CursorLineNr', {'fg': s:attn, 'bg': s:edge, 'all': ['bold']})
 
 " The gui uses bold because the colors I chose are somewhat dull and
 " hard to see otherwise, but the cterm equivalents are already quite
@@ -129,87 +138,109 @@ call s:HL('DiffChange', {'bg': ['#4C4800', 58]})
 call s:HL('DiffDelete', {'bg': ['#6C3434', 88], 'fg': ['#FF4545', 131], 'all': ['bold']})
 call s:HL('DiffText', {'bg': ['#314F66', 23], 'all': ['italic', 'bold']})
 
-call s:HL('SpellBad', {'ctermbg': 52, 'guisp': '#FF2020', 'gui': ['undercurl']})
-call s:HL('SpellCap', {'ctermbg': 17, 'guisp': '#0035DF', 'gui': ['undercurl']})
+call s:HL('SpellBad', {'ctermbg': 52, 'guisp': s:bad[0], 'gui': ['undercurl']})
+call s:HL('SpellCap', {'ctermbg': 17, 'guisp': '#0048DF', 'gui': ['undercurl']})
 call s:HL('SpellLocal', {'ctermbg': 89, 'guisp': '#BF2A77', 'gui': ['undercurl']})
 call s:HL('SpellRare', {'ctermbg': 56, 'guisp': '#772ABF', 'gui': ['undercurl']})
 
-call s:HL('StatusLine', {'bg': s:activewin, 'fg': s:otherwin, 'all': ['bold']})
-call s:HL('StatusLineNC', {'bg': s:otherwin, 'fg': s:activewin})
-call s:HL('StatusLineTerm', {'bg': s:activeterm, 'fg': s:otherwin, 'all': ['bold']})
-call s:HL('StatusLineTermNC', {'bg': s:otherwin, 'fg': s:activeterm})
-call s:HL('VertSplit', {'bg': s:activewin, 'fg': s:BG})
+call s:HL('StatusLine', {'bg': s:activewin, 'fg': s:inactivewin, 'all': ['bold']})
+call s:HL('StatusLineNC', {'bg': s:inactivewin, 'fg': s:activewin})
+call s:HL('StatusLineTerm', {'bg': s:activeterm, 'fg': s:inactivewin, 'all': ['bold']})
+call s:HL('StatusLineTermNC', {'bg': s:inactivewin, 'fg': s:activeterm})
+call s:HL('VertSplit', {'bg': s:sep, 'fg': s:sep})
 
+call s:HL('Title', {'fg': ['#FFCF60', 221], 'all': ['bold']})
+call s:HL('Question', {'fg': ['#A0FF40', 155], 'all': ['bold']})
+highlight! link MoreMsg Question
 call s:HL('ModeMsg', {'fg': s:cursor, 'all': ['bold']})
-call s:HL('WarningMsg', {'fg': s:attn, 'bg': ['#645e2a', 94], 'all': ['bold']})
+call s:HL('WarningMsg', {'fg': s:attn, 'bg': ['#645E2A', 94], 'all': ['bold']})
+call s:HL('ErrorMsg', {'fg': ['#FFFFFF', 15], 'bg': s:bad})
+highlight! link Error ErrorMsg
 
-call s:HL('Folded', {'bg': s:otherwin, 'fg': s:extra, 'all': ['bold', 'italic']})
+call s:HL('Folded', {'bg': s:inactivewin, 'fg': s:nontext, 'all': ['bold', 'italic']})
 highlight! link FoldColumn Folded
 
-" Unselected items in the Pmenu use the Folded colors, selected items
-" use visual selection color as bg, current window status color as fg,
-" the scrollbar uses the LineNr/ColorColumn bg color with current window
-" status color for the thumb.
-call s:HL('Pmenu', {'bg': s:otherwin, 'fg': s:extra})
+call s:HL('Pmenu', {'bg': s:inactivewin, 'fg': s:context})
 call s:HL('PmenuSel', {'bg': s:select, 'fg': s:activewin})
-call s:HL('PmenuSbar', {'bg': s:edge})
-call s:HL('PmenuThumb', {'bg': s:activewin})
+call s:HL('PmenuSbar', {'bg': s:inactivewin})
+call s:HL('PmenuThumb', {'bg': s:sep})
 
-call s:HL('TabLine', {'bg': s:extra, 'fg': s:BG})
+call s:HL('TabLine', {'bg': s:othertab, 'fg': s:BG})
 call s:HL('TabLineFill', {'bg': s:activewin})
-call s:HL('TabLineSel', {'fg': s:activewin, 'all': ['bold']})
+call s:HL('TabLineSel', {'fg': s:othertab, 'all': ['bold']})
 " }}}
 
 " --- Syntax -----------------------------------------------------------
 " {{{
-
-" TODO: can't decide if I prefer italics or underline here
-call s:HL('Todo', {'fg': s:attn, 'all': ['bold', 'italic']})
-
-call s:HL('Comment', {'fg': ['#8A835C', 243]})
-call s:HL('String', {'fg': ['#AFCE57', 107]})
-call s:HL('Special', {'fg': ['#FF7040', 209]})
-call s:HL('Constant', {'fg': ['#FB9C6E', 173]})
-call s:HL('Delimiter', {'fg': ['#86C393', 72]})
+" TODO: Should Type be a bit more vibrant?
+call s:HL('Type', {'fg': ['#80E8C8', 80]})
+call s:HL('Identifier', {'fg': ['#5CA8FF', 69]})
+highlight! link Directory Identifier
 
 call s:HL('PreProc', {'fg': ['#E44269', 161], 'all': ['bold']})
 call s:HL('Statement', {'fg': ['#CC78B2', 133], 'all': ['bold']})
-hi! link Define Statement
+highlight! link Define Statement
 
-call s:HL('Identifier', {'fg': ['#5C98FF', 69]})
-call s:HL('Type', {'fg': ['#60e8c8', 80]})
+call s:HL('Constant', {'fg': ['#FB9C6E', 173]})
+call s:HL('Special', {'fg': ['#FF7040', 202]})
+call s:HL('String', {'fg': ['#AFCE57', 107]})
+highlight! link Quote String
+
+" TODO: can't decide if I prefer italics or underline here
+call s:HL('Todo', {'fg': s:attn, 'all': ['bold', 'italic']})
+call s:HL('Comment', {'fg': ['#8A835C', 243]})
+
+call s:HL('Underlined', {'fg': ['#A890FF', 141], 'all': ['underline']})
+call s:HL('Delimiter', {'fg': ['#86C393', 72]})
+
+" Some of the builtin syntax definitions link to some rather strange
+" highlight groups by default, which can look bad in potato.
+" Shell Script:
+highlight link shQuote String
+highlight link shOption Type
+" highlight link shDeref Special
+" highlight link shCmdSubRegion Special
+highlight link shCommandSub Normal
+
+" JavaScript:
+highlight link javaScriptBraces Delimiter
+highlight link javaScriptValue Constant
+
+" HTML:
+highlight link htmlTagName Identifier
 " }}}
 
 " --- Debug ------------------------------------------------------------
-" {{{
+if s:DEBUG_MODE " {{{
+    function! <SID>show_syntax()
+        for id in synstack(line('.'), col('.'))
+            let transID = synIDtrans(id)
+            if id != transID
+                echo synIDattr(id, 'name') '=>' synIDattr(transID, 'name')
+            else
+                echo synIDattr(id, 'name')
+            endif
+        endfor
+    endfunc
 
-function! <SID>show_syntax()
-    for id in synstack(line('.'), col('.'))
-        let transID = synIDtrans(id)
-        if id != transID
-            echo synIDattr(id, 'name') '=>' synIDattr(transID, 'name')
+    sign define potato_sign text=>> texthl=Search
+    function! <SID>toggle_sign()
+        let ln = line('.')
+        let buf = bufname('')
+        let gname = 'potato_sign_group'
+        if empty(sign_getplaced(buf, {'group': gname, 'lnum': ln})[0]['signs'])
+            call sign_place(ln, gname, 'potato_sign', buf, {'lnum': ln})
         else
-            echo synIDattr(id, 'name')
+            call sign_unplace(gname, {'buffer': buf, 'id': ln})
         endif
-    endfor
-endfunc
+    endfunc
 
-sign define potato_sign text=>> texthl=Search
-function! <SID>toggle_sign()
-    let ln = line('.')
-    let buf = bufname('')
-    let gname = 'potato_sign_group'
-    if empty(sign_getplaced(buf, {'group': gname, 'lnum': ln})[0]['signs'])
-        call sign_place(ln, gname, 'potato_sign', buf, {'lnum': ln})
-    else
-        call sign_unplace(gname, {'buffer': buf, 'id': ln})
-    endif
-endfunc
+    nmap <Leader>s :call <SID>show_syntax()<CR>
+    nmap <Leader>r :colo potato<CR>
+    nmap <Leader>n :call <SID>toggle_sign()<CR>
 
-nmap <Leader>s :call <SID>show_syntax()<CR>
-nmap <Leader>r :colo potato<CR>
-nmap <Leader>h <Plug>ToggleHexHighlight
-nmap <Leader>n :call <SID>toggle_sign()<CR>
-" }}}
+    " Requires the hexHighlight plugin:
+    nmap <Leader>h <Plug>ToggleHexHighlight
+endif " }}}
 
 " vim: foldmethod=marker
