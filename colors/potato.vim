@@ -21,9 +21,6 @@ endif
 
 let g:colors_name = 'potato'
 
-" Defines some useful mappings for working on potato.
-let s:DEBUG_MODE = 0
-
 " --- Utility Functions ------------------------------------------------
 " {{{
 " These functions make it a little easier to highlight stuff.
@@ -205,38 +202,5 @@ highlight link javaScriptValue Constant
 " HTML:
 highlight link htmlTagName Identifier
 " }}}
-
-" --- Debug ------------------------------------------------------------
-if s:DEBUG_MODE " {{{
-    function! <SID>show_syntax()
-        for id in synstack(line('.'), col('.'))
-            let transID = synIDtrans(id)
-            if id != transID
-                echo synIDattr(id, 'name') '=>' synIDattr(transID, 'name')
-            else
-                echo synIDattr(id, 'name')
-            endif
-        endfor
-    endfunc
-
-    sign define potato_sign text=>> texthl=Search
-    function! <SID>toggle_sign()
-        let ln = line('.')
-        let buf = bufname('')
-        let gname = 'potato_sign_group'
-        if empty(sign_getplaced(buf, {'group': gname, 'lnum': ln})[0]['signs'])
-            call sign_place(ln, gname, 'potato_sign', buf, {'lnum': ln})
-        else
-            call sign_unplace(gname, {'buffer': buf, 'id': ln})
-        endif
-    endfunc
-
-    nmap <Leader>s :call <SID>show_syntax()<CR>
-    nmap <Leader>r :colo potato<CR>
-    nmap <Leader>n :call <SID>toggle_sign()<CR>
-
-    " Requires the hexHighlight plugin:
-    nmap <Leader>h <Plug>ToggleHexHighlight
-endif " }}}
 
 " vim: foldmethod=marker
