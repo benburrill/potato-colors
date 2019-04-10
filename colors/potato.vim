@@ -186,6 +186,7 @@ highlight! link Quote String
 " TODO: can't decide if I prefer italics or underline here
 call s:HL('Todo', {'fg': s:attn, 'all': ['bold', 'italic']})
 call s:HL('Comment', {'fg': ['#8A835C', 243]})
+call s:HL('SpecialComment', {'fg': ['#d9b85d', 179]})
 
 call s:HL('Underlined', {'fg': ['#A890FF', 141], 'all': ['underline']})
 call s:HL('Delimiter', {'fg': ['#86C393', 72]})
